@@ -33,6 +33,29 @@ const DateUtil = {
     const m = mins % 60;
     return `${sign}${h}h ${String(m).padStart(2, '0')}m`;
   },
+  // "1:00" / "2:20" style clock format (used in the OT tables)
+  minutesToClock(mins) {
+    const sign = mins < 0 ? '-' : '';
+    mins = Math.abs(Math.round(mins));
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${sign}${h}:${String(m).padStart(2, '0')}`;
+  },
+  // decimal-hours format used for "ชั่วโมงคิดโอที" e.g. 60min -> "1", 135min -> "2.25"
+  minutesToDecimalHours(mins) {
+    const val = Math.round((mins / 60) * 100) / 100;
+    return String(val);
+  },
+  // Thai Buddhist-era date + time, e.g. "13/7/2569 14:59 น."
+  formatThaiDateTime(input) {
+    const d = (input instanceof Date) ? input : new Date(input);
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear() + 543;
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hh}:${mm} น.`;
+  },
   monthLabel(year, month) {
     const names = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
       'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];

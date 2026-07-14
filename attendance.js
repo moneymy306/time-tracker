@@ -60,14 +60,23 @@ function applyAutoOT(entry) {
   let overMinutes = outMin - workEndMin;
   if (overMinutes < settings.otRule.minMinutesToCount) return;
 
+  // ปัดเศษนาที OT ลงเป็นก้อนละ otRule.roundToMinutes นาที (ค่าเริ่มต้น 15 นาที)
+  // เช่น ทำงานเกิน 140 นาที (2:20) -> ปัด floor(140/15)*15 = 135 นาที (2.25 ชม.)
   const rounded = Math.floor(overMinutes / settings.otRule.roundToMinutes) * settings.otRule.roundToMinutes;
   if (rounded <= 0) return;
+
+  const timeRange = `${settings.workEnd} - ${entry.timeOut}`;
+  const now = new Date();
 
   const otList = Storage.getOT();
   // avoid double-crediting if this function runs twice for the same date
   const already = otList.find(o => o.date === entry.date && o.type === 'earn' && o.source === 'auto');
   if (already) {
     already.minutes = rounded;
+    already.actualMinutes = overMinutes;
+    already.timeRange = timeRange;
+    already.createdAt = now.toISOString();
+    already.note = `ทำงานเกินเวลา ${DateUtil.minutesToClock(overMinutes)}`;
   } else {
     const expire = DateUtil.parseISO(entry.date);
     expire.setDate(expire.getDate() + settings.otRule.expireDays);
@@ -76,8 +85,11 @@ function applyAutoOT(entry) {
       date: entry.date,
       type: 'earn',
       source: 'auto',
-      minutes: rounded,
-      note: `ทำงานเกินเวลา ${DateUtil.minutesToHM(overMinutes)}`,
+      minutes: rounded,          // ชั่วโมงคิดโอที (ปัดเศษแล้ว หน่วยนาที)
+      actualMinutes: overMinutes, // ชั่วโมงจริงที่ทำงานเกิน (ไม่ปัดเศษ หน่วยนาที)
+      timeRange,                  // ช่วงเวลา OT เช่น "17:00 - 18:00"
+      createdAt: now.toISOString(), // เวลาที่ระบบสร้างรายการนี้
+      note: `ทำงานเกินเวลา ${DateUtil.minutesToClock(overMinutes)}`,
       expireDate: DateUtil.toISO(expire)
     });
   }
@@ -153,7 +165,8 @@ function renderAttendanceHistory() {
       workedLabel = DateUtil.minutesToHM(worked);
       const over = DateUtil.hmToMinutes(e.timeOut) - DateUtil.hmToMinutes(settings.workEnd);
       if (over >= settings.otRule.minMinutesToCount) {
-        otLabel = `<span class="tag tag-ot">+OT ${DateUtil.minutesToHM(over)}</span>`;
+        const roundedOT = Math.floor(over / settings.otRule.roundToMinutes) * settings.otRule.roundToMinutes;
+        otLabel = `<span class="tag tag-ot">+OT ${DateUtil.minutesToClock(over)} (${DateUtil.minutesToDecimalHours(roundedOT)})</span>`;
       }
     }
     return `

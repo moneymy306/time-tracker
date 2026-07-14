@@ -245,6 +245,11 @@ td input[type="time"] { padding: 6px 8px; font-family: var(--font-mono); }
 .ot-balance-value.negative { color: var(--bad); }
 .ot-balance-caption { color: var(--ink-soft); font-size: 13px; margin-top: 4px; }
 
+.ot-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-top: 16px; }
+.ot-summary-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.ot-summary-label { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 6px; }
+.ot-summary-value { font-family: var(--font-mono); font-size: 18px; font-weight: 700; }
+
 /* ---------- Calendar ---------- */
 .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .calendar-header h2 { font-family: var(--font-mono); font-size: 18px; margin: 0; }

@@ -8,7 +8,7 @@
 const STORAGE_KEYS = {
   ATTENDANCE: 'tt_attendance',   // array of {id, date, timeIn, timeOut, note}
   LEAVE: 'tt_leave',             // array of {id, type, date, endDate, days, reason, createdAt}
-  OT: 'tt_ot',                   // array of {id, date, type:'earn'|'use', minutes, note, expireDate}
+  OT: 'tt_ot',                   // array of {id, date, type:'earn'|'use', source, minutes, actualMinutes, timeRange, createdAt, note, expireDate}
   SETTINGS: 'tt_settings'        // object, see config.js DEFAULT_SETTINGS
 };
 
