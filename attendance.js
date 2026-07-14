@@ -96,6 +96,58 @@ function applyAutoOT(entry) {
   Storage.saveOT(otList);
 }
 
+/**
+ * Manually add or update an attendance record for a chosen (usually past) date.
+ * Unlike clockIn/clockOut, this isn't limited to "today" — it lets the user
+ * pick any date and fill in both times at once. Runs the same auto-OT logic.
+ */
+function saveManualAttendance() {
+  const dateInput = document.getElementById('manual-att-date');
+  const timeInInput = document.getElementById('manual-att-timein');
+  const timeOutInput = document.getElementById('manual-att-timeout');
+
+  const date = dateInput.value;
+  const timeIn = timeInInput.value;
+  const timeOut = timeOutInput.value;
+
+  if (!date) {
+    toast('กรุณาเลือกวันที่', 'warn');
+    return;
+  }
+  if (!timeIn) {
+    toast('กรุณาระบุเวลาเข้างาน', 'warn');
+    return;
+  }
+  if (date > DateUtil.todayISO()) {
+    toast('ไม่สามารถลงเวลาล่วงหน้าได้', 'warn');
+    return;
+  }
+  if (timeOut && DateUtil.hmToMinutes(timeOut) <= DateUtil.hmToMinutes(timeIn)) {
+    toast('เวลาออกงานต้องอยู่หลังเวลาเข้างาน', 'warn');
+    return;
+  }
+
+  const list = Storage.getAttendance();
+  let entry = list.find(e => e.date === date);
+  const isNew = !entry;
+  if (entry) {
+    entry.timeIn = timeIn;
+    entry.timeOut = timeOut || null;
+  } else {
+    entry = { id: Storage.uid(), date, timeIn, timeOut: timeOut || null, note: '' };
+    list.push(entry);
+  }
+  Storage.saveAttendance(list);
+  if (entry.timeOut) applyAutoOT(entry);
+
+  toast((isNew ? 'บันทึกวันที่ย้อนหลังแล้ว ' : 'แก้ไขข้อมูลวันที่ ') + date);
+
+  dateInput.value = '';
+  timeInInput.value = '';
+  timeOutInput.value = '';
+  renderAttendancePage();
+}
+
 function deleteAttendance(id) {
   if (!confirmDialog('ลบรายการนี้?')) return;
   let list = Storage.getAttendance();
