@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>วันลา · TIME/TRACK</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <nav id="app-nav"></nav>
+    <main>
+      <div class="page-header">
+        <h1 class="page-title">วันลา</h1>
+        <p class="page-subtitle">พักร้อน · ลากิจ · ลาป่วย</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">สิทธิ์วันลาคงเหลือปีนี้</div>
+        <div class="quota-grid" id="leave-quota-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ยื่นวันลาใหม่</div>
+        <div class="field-row">
+          <div class="field">
+            <label>ประเภทการลา</label>
+            <select id="leave-type">
+              <option value="vacation">พักร้อน</option>
+              <option value="personal">ลากิจ</option>
+              <option value="sick">ลาป่วย</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>วันที่เริ่มลา</label>
+            <input type="date" id="leave-start">
+          </div>
+          <div class="field">
+            <label>วันที่สิ้นสุด (ถ้าลาหลายวัน)</label>
+            <input type="date" id="leave-end">
+          </div>
+        </div>
+        <div class="field">
+          <label>เหตุผล (ไม่บังคับ)</label>
+          <textarea id="leave-reason" rows="2" style="width:100%"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitLeave()">บันทึกการลา</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          ประวัติการลา
+          <select id="leave-type-filter">
+            <option value="all">ทั้งหมด</option>
+            <option value="vacation">พักร้อน</option>
+            <option value="personal">ลากิจ</option>
+            <option value="sick">ลาป่วย</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ประเภท</th><th>วันที่</th><th>จำนวน</th><th>เหตุผล</th><th>วันที่ยื่น</th><th></th></tr>
+          </thead>
+          <tbody id="leave-history-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/leave.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => renderShell('leave.html'));
+  </script>
+</body>
+</html>

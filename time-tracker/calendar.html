@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ปฏิทิน · TIME/TRACK</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <nav id="app-nav"></nav>
+    <main>
+      <div class="page-header">
+        <h1 class="page-title">ปฏิทินสรุป</h1>
+        <p class="page-subtitle">รวมการลงเวลา วันลา OT และวันหยุดในเดือนเดียวกัน คลิกวันที่เพื่อดูรายละเอียด</p>
+      </div>
+
+      <div class="card">
+        <div class="calendar-header">
+          <button class="btn btn-outline" onclick="changeCalMonth(-1)">‹ เดือนก่อน</button>
+          <h2 id="calendar-month-label"></h2>
+          <button class="btn btn-outline" onclick="changeCalMonth(1)">เดือนถัดไป ›</button>
+        </div>
+        <div class="cal-grid" id="calendar-grid"></div>
+        <div id="day-detail-panel"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">คำอธิบายสัญลักษณ์</div>
+        <div class="clock-actions" style="flex-wrap:wrap">
+          <span><span class="cal-dot cal-dot-work" style="display:inline-block"></span> มีลงเวลา</span>
+          <span><span class="cal-dot cal-dot-ot" style="display:inline-block"></span> ได้ OT</span>
+          <span><span class="cal-dot" style="background:#7FA88C;display:inline-block"></span> พักร้อน</span>
+          <span><span class="cal-dot" style="background:#E8A33D;display:inline-block"></span> ลากิจ</span>
+          <span><span class="cal-dot" style="background:#C1666B;display:inline-block"></span> ลาป่วย</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/calendar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => renderShell('calendar.html'));
+  </script>
+</body>
+</html>
