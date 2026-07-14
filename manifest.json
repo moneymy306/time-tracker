@@ -1,0 +1,11 @@
+{
+  "name": "Time Tracker",
+  "short_name": "TimeTrack",
+  "start_url": "./dashboard.html",
+  "display": "standalone",
+  "background_color": "#F7F5F0",
+  "theme_color": "#1C2B33",
+  "icons": [
+    { "src": "assets/logo.png", "sizes": "192x192", "type": "image/png" }
+  ]
+}

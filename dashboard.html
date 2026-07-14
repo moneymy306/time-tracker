@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ภาพรวม · TIME/TRACK</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <nav id="app-nav"></nav>
+    <main>
+      <div class="page-header">
+        <h1 class="page-title">ภาพรวม</h1>
+        <p class="page-subtitle">สรุปสถานะการทำงานของคุณวันนี้</p>
+      </div>
+
+      <div class="stat-grid" id="dashboard-stats"></div>
+
+      <div class="card">
+        <div class="card-title">
+          สถานะวันนี้
+          <span id="today-status"></span>
+        </div>
+        <div class="clock-actions">
+          <button class="btn btn-primary" id="btn-clockin" onclick="clockIn(); renderDashboard();">ลงเวลาเข้างาน</button>
+          <button class="btn btn-outline" id="btn-clockout" onclick="clockOut(); renderDashboard();">ลงเวลาออกงาน</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ทางลัด</div>
+        <div class="clock-actions">
+          <a href="leave.html" class="btn btn-outline">ยื่นวันลา</a>
+          <a href="ot-bank.html" class="btn btn-outline">เบิกใช้ OT</a>
+          <a href="calendar.html" class="btn btn-outline">ดูปฏิทิน</a>
+          <a href="report.html" class="btn btn-outline">ดูรายงาน</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/attendance.js"></script>
+  <script src="js/ot.js"></script>
+  <script src="js/leave.js"></script>
+  <script>
+    function renderDashboard() {
+      const today = getTodayEntry();
+      const statusBox = document.getElementById('today-status');
+      if (!today) {
+        statusBox.innerHTML = `<span class="status-pill status-idle">ยังไม่ลงเวลาเข้างาน</span>`;
+      } else if (!today.timeOut) {
+        statusBox.innerHTML = `<span class="status-pill status-in">เข้างานแล้ว ${today.timeIn}</span>`;
+      } else {
+        statusBox.innerHTML = `<span class="status-pill status-out">ออกงานแล้ว ${today.timeIn} – ${today.timeOut}</span>`;
+      }
+      document.getElementById('btn-clockin').disabled = !!today;
+      document.getElementById('btn-clockout').disabled = !today || !!today.timeOut;
+
+      const otBalance = getOTBalance();
+      const year = new Date().getFullYear();
+      const used = getLeaveUsed(year);
+      const settings = getSettings();
+      const remainVacation = settings.leaveQuota.vacation - (used.vacation || 0);
+
+      // month worked hours
+      const monthPrefix = DateUtil.todayISO().slice(0, 7);
+      const attendance = Storage.getAttendance().filter(a => a.date.startsWith(monthPrefix));
+      let workedMin = 0;
+      attendance.forEach(a => {
+        if (a.timeIn && a.timeOut) {
+          workedMin += DateUtil.hmToMinutes(a.timeOut) - DateUtil.hmToMinutes(a.timeIn) - settings.breakMinutes;
+        }
+      });
+
+      document.getElementById('dashboard-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">ชั่วโมงทำงานเดือนนี้</div>
+          <div class="stat-value">${DateUtil.minutesToHM(workedMin)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">OT คงเหลือ</div>
+          <div class="stat-value ${otBalance < 0 ? 'bad' : 'accent'}">${DateUtil.minutesToHM(otBalance)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">พักร้อนคงเหลือ</div>
+          <div class="stat-value good">${remainVacation} วัน</div>
+        </div>
+      `;
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      renderShell('dashboard.html');
+      renderDashboard();
+    });
+  </script>
+</body>
+</html>
