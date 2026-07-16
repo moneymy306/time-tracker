@@ -84,6 +84,56 @@ function applyAutoOT(entry) {
   Storage.saveOT(otList);
 }
 
+/**
+ * Manually add (or overwrite) an attendance record for a past date —
+ * for when someone forgot to clock in/out. Reuses the same auto-OT
+ * logic as a normal clock-out.
+ */
+function addBackdatedAttendance() {
+  const date = document.getElementById('back-date').value;
+  const timeIn = document.getElementById('back-timein').value;
+  const timeOut = document.getElementById('back-timeout').value;
+  const note = document.getElementById('back-note').value.trim();
+
+  if (!date) {
+    toast('กรุณาเลือกวันที่', 'warn');
+    return;
+  }
+  if (!timeIn) {
+    toast('กรุณากรอกเวลาเข้างานอย่างน้อย', 'warn');
+    return;
+  }
+  if (timeOut && DateUtil.hmToMinutes(timeOut) <= DateUtil.hmToMinutes(timeIn)) {
+    toast('เวลาออกงานต้องมากกว่าเวลาเข้างาน', 'warn');
+    return;
+  }
+
+  const list = Storage.getAttendance();
+  const existing = list.find(e => e.date === date);
+
+  if (existing) {
+    if (!confirmDialog(`วันที่ ${date} มีข้อมูลลงเวลาอยู่แล้ว (${existing.timeIn || '-'} – ${existing.timeOut || '-'}) ต้องการเขียนทับหรือไม่?`)) return;
+    existing.timeIn = timeIn;
+    existing.timeOut = timeOut || null;
+    existing.note = note;
+    Storage.saveAttendance(list);
+    if (existing.timeOut) applyAutoOT(existing);
+  } else {
+    const entry = { id: Storage.uid(), date, timeIn, timeOut: timeOut || null, note };
+    list.push(entry);
+    Storage.saveAttendance(list);
+    if (entry.timeOut) applyAutoOT(entry);
+  }
+
+  toast('บันทึกลงเวลาย้อนหลังแล้ว');
+  document.getElementById('back-date').value = '';
+  document.getElementById('back-timein').value = '';
+  document.getElementById('back-timeout').value = '';
+  document.getElementById('back-note').value = '';
+
+  renderAttendancePage();
+}
+
 function deleteAttendance(id) {
   if (!confirmDialog('ลบรายการนี้?')) return;
   let list = Storage.getAttendance();
@@ -171,6 +221,8 @@ function renderAttendanceHistory() {
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('attendance-history-body')) return;
   renderAttendancePage();
+  const backDateInput = document.getElementById('back-date');
+  if (backDateInput) backDateInput.max = DateUtil.todayISO();
   const filterInput = document.getElementById('history-month-filter');
   if (filterInput) {
     filterInput.value = DateUtil.todayISO().slice(0, 7);

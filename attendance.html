@@ -27,6 +27,30 @@
       </div>
 
       <div class="card">
+        <div class="card-title">ลงเวลาย้อนหลัง</div>
+        <p class="page-subtitle" style="margin-top:-8px">ลืมลงเวลา? เพิ่มหรือแก้ไขเวลาเข้า-ออกของวันที่ผ่านมาได้ที่นี่ (ถ้าวันนั้นมีข้อมูลอยู่แล้วจะเขียนทับ)</p>
+        <div class="field-row">
+          <div class="field">
+            <label>วันที่</label>
+            <input type="date" id="back-date">
+          </div>
+          <div class="field">
+            <label>เวลาเข้างาน</label>
+            <input type="time" id="back-timein">
+          </div>
+          <div class="field">
+            <label>เวลาออกงาน (ถ้ามี)</label>
+            <input type="time" id="back-timeout">
+          </div>
+        </div>
+        <div class="field">
+          <label>หมายเหตุ (ไม่บังคับ)</label>
+          <input type="text" id="back-note" placeholder="เช่น ลืมแตะบัตร, ทำงานนอกสถานที่">
+        </div>
+        <button class="btn btn-primary" onclick="addBackdatedAttendance()">บันทึกลงเวลาย้อนหลัง</button>
+      </div>
+
+      <div class="card">
         <div class="card-title">
           ประวัติย้อนหลัง
           <input type="month" id="history-month-filter">
