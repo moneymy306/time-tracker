@@ -35,18 +35,31 @@
 
       <div class="card">
         <div class="card-title">สิทธิ์วันลาต่อปี</div>
+        <p class="page-subtitle" style="margin-top:-8px">กำหนดสิทธิ์เป็นวัน/ชั่วโมง/นาที รวมกันได้ เช่น 6 วัน 4 ชม. 30 นาที</p>
         <div class="field-row">
           <div class="field">
-            <label>พักร้อน (วัน)</label>
-            <input type="number" id="set-quota-vacation" min="0">
+            <label>พักร้อน</label>
+            <div class="quota-dhm">
+              <input type="number" id="set-quota-vacation-days" min="0" placeholder="วัน">
+              <input type="number" id="set-quota-vacation-hours" min="0" max="23" placeholder="ชม.">
+              <input type="number" id="set-quota-vacation-minutes" min="0" max="59" placeholder="นาที">
+            </div>
           </div>
           <div class="field">
-            <label>ลากิจ (วัน)</label>
-            <input type="number" id="set-quota-personal" min="0">
+            <label>ลากิจ</label>
+            <div class="quota-dhm">
+              <input type="number" id="set-quota-personal-days" min="0" placeholder="วัน">
+              <input type="number" id="set-quota-personal-hours" min="0" max="23" placeholder="ชม.">
+              <input type="number" id="set-quota-personal-minutes" min="0" max="59" placeholder="นาที">
+            </div>
           </div>
           <div class="field">
-            <label>ลาป่วย (วัน)</label>
-            <input type="number" id="set-quota-sick" min="0">
+            <label>ลาป่วย</label>
+            <div class="quota-dhm">
+              <input type="number" id="set-quota-sick-days" min="0" placeholder="วัน">
+              <input type="number" id="set-quota-sick-hours" min="0" max="23" placeholder="ชม.">
+              <input type="number" id="set-quota-sick-minutes" min="0" max="59" placeholder="นาที">
+            </div>
           </div>
         </div>
       </div>
@@ -83,24 +96,31 @@
       document.getElementById('set-work-start').value = s.workStart;
       document.getElementById('set-work-end').value = s.workEnd;
       document.getElementById('set-break-minutes').value = s.breakMinutes;
-      document.getElementById('set-quota-vacation').value = s.leaveQuota.vacation;
-      document.getElementById('set-quota-personal').value = s.leaveQuota.personal;
-      document.getElementById('set-quota-sick').value = s.leaveQuota.sick;
+      ['vacation', 'personal', 'sick'].forEach(type => {
+        document.getElementById(`set-quota-${type}-days`).value = s.leaveQuota[type].days;
+        document.getElementById(`set-quota-${type}-hours`).value = s.leaveQuota[type].hours;
+        document.getElementById(`set-quota-${type}-minutes`).value = s.leaveQuota[type].minutes;
+      });
       document.getElementById('set-ot-min').value = s.otRule.minMinutesToCount;
       document.getElementById('set-ot-round').value = s.otRule.roundToMinutes;
       document.getElementById('set-ot-expire').value = s.otRule.expireDays;
     }
 
     function saveSettingsForm() {
+      const readQuota = type => ({
+        days: parseInt(document.getElementById(`set-quota-${type}-days`).value, 10) || 0,
+        hours: parseInt(document.getElementById(`set-quota-${type}-hours`).value, 10) || 0,
+        minutes: parseInt(document.getElementById(`set-quota-${type}-minutes`).value, 10) || 0
+      });
       const newSettings = {
         workStart: document.getElementById('set-work-start').value,
         workEnd: document.getElementById('set-work-end').value,
         breakMinutes: parseInt(document.getElementById('set-break-minutes').value, 10) || 0,
         workDays: DEFAULT_SETTINGS.workDays,
         leaveQuota: {
-          vacation: parseInt(document.getElementById('set-quota-vacation').value, 10) || 0,
-          personal: parseInt(document.getElementById('set-quota-personal').value, 10) || 0,
-          sick: parseInt(document.getElementById('set-quota-sick').value, 10) || 0
+          vacation: readQuota('vacation'),
+          personal: readQuota('personal'),
+          sick: readQuota('sick')
         },
         otRule: {
           minMinutesToCount: parseInt(document.getElementById('set-ot-min').value, 10) || 0,

@@ -60,23 +60,14 @@ function applyAutoOT(entry) {
   let overMinutes = outMin - workEndMin;
   if (overMinutes < settings.otRule.minMinutesToCount) return;
 
-  // ปัดเศษนาที OT ลงเป็นก้อนละ otRule.roundToMinutes นาที (ค่าเริ่มต้น 15 นาที)
-  // เช่น ทำงานเกิน 140 นาที (2:20) -> ปัด floor(140/15)*15 = 135 นาที (2.25 ชม.)
   const rounded = Math.floor(overMinutes / settings.otRule.roundToMinutes) * settings.otRule.roundToMinutes;
   if (rounded <= 0) return;
-
-  const timeRange = `${settings.workEnd} - ${entry.timeOut}`;
-  const now = new Date();
 
   const otList = Storage.getOT();
   // avoid double-crediting if this function runs twice for the same date
   const already = otList.find(o => o.date === entry.date && o.type === 'earn' && o.source === 'auto');
   if (already) {
     already.minutes = rounded;
-    already.actualMinutes = overMinutes;
-    already.timeRange = timeRange;
-    already.createdAt = now.toISOString();
-    already.note = `ทำงานเกินเวลา ${DateUtil.minutesToClock(overMinutes)}`;
   } else {
     const expire = DateUtil.parseISO(entry.date);
     expire.setDate(expire.getDate() + settings.otRule.expireDays);
@@ -85,67 +76,12 @@ function applyAutoOT(entry) {
       date: entry.date,
       type: 'earn',
       source: 'auto',
-      minutes: rounded,          // ชั่วโมงคิดโอที (ปัดเศษแล้ว หน่วยนาที)
-      actualMinutes: overMinutes, // ชั่วโมงจริงที่ทำงานเกิน (ไม่ปัดเศษ หน่วยนาที)
-      timeRange,                  // ช่วงเวลา OT เช่น "17:00 - 18:00"
-      createdAt: now.toISOString(), // เวลาที่ระบบสร้างรายการนี้
-      note: `ทำงานเกินเวลา ${DateUtil.minutesToClock(overMinutes)}`,
+      minutes: rounded,
+      note: `ทำงานเกินเวลา ${DateUtil.minutesToHM(overMinutes)}`,
       expireDate: DateUtil.toISO(expire)
     });
   }
   Storage.saveOT(otList);
-}
-
-/**
- * Manually add or update an attendance record for a chosen (usually past) date.
- * Unlike clockIn/clockOut, this isn't limited to "today" — it lets the user
- * pick any date and fill in both times at once. Runs the same auto-OT logic.
- */
-function saveManualAttendance() {
-  const dateInput = document.getElementById('manual-att-date');
-  const timeInInput = document.getElementById('manual-att-timein');
-  const timeOutInput = document.getElementById('manual-att-timeout');
-
-  const date = dateInput.value;
-  const timeIn = timeInInput.value;
-  const timeOut = timeOutInput.value;
-
-  if (!date) {
-    toast('กรุณาเลือกวันที่', 'warn');
-    return;
-  }
-  if (!timeIn) {
-    toast('กรุณาระบุเวลาเข้างาน', 'warn');
-    return;
-  }
-  if (date > DateUtil.todayISO()) {
-    toast('ไม่สามารถลงเวลาล่วงหน้าได้', 'warn');
-    return;
-  }
-  if (timeOut && DateUtil.hmToMinutes(timeOut) <= DateUtil.hmToMinutes(timeIn)) {
-    toast('เวลาออกงานต้องอยู่หลังเวลาเข้างาน', 'warn');
-    return;
-  }
-
-  const list = Storage.getAttendance();
-  let entry = list.find(e => e.date === date);
-  const isNew = !entry;
-  if (entry) {
-    entry.timeIn = timeIn;
-    entry.timeOut = timeOut || null;
-  } else {
-    entry = { id: Storage.uid(), date, timeIn, timeOut: timeOut || null, note: '' };
-    list.push(entry);
-  }
-  Storage.saveAttendance(list);
-  if (entry.timeOut) applyAutoOT(entry);
-
-  toast((isNew ? 'บันทึกวันที่ย้อนหลังแล้ว ' : 'แก้ไขข้อมูลวันที่ ') + date);
-
-  dateInput.value = '';
-  timeInInput.value = '';
-  timeOutInput.value = '';
-  renderAttendancePage();
 }
 
 function deleteAttendance(id) {
@@ -217,8 +153,7 @@ function renderAttendanceHistory() {
       workedLabel = DateUtil.minutesToHM(worked);
       const over = DateUtil.hmToMinutes(e.timeOut) - DateUtil.hmToMinutes(settings.workEnd);
       if (over >= settings.otRule.minMinutesToCount) {
-        const roundedOT = Math.floor(over / settings.otRule.roundToMinutes) * settings.otRule.roundToMinutes;
-        otLabel = `<span class="tag tag-ot">+OT ${DateUtil.minutesToClock(over)} (${DateUtil.minutesToDecimalHours(roundedOT)})</span>`;
+        otLabel = `<span class="tag tag-ot">+OT ${DateUtil.minutesToHM(over)}</span>`;
       }
     }
     return `

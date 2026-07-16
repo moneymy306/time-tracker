@@ -27,26 +27,6 @@
       </div>
 
       <div class="card">
-        <div class="card-title">ลงเวลาย้อนหลัง</div>
-        <p class="page-subtitle" style="margin-top:-4px">เลือกวันที่ที่ต้องการ แล้วกรอกเวลาเข้า-ออกงาน ระบบจะคำนวณ OT ให้อัตโนมัติเช่นเดียวกับการลงเวลาปกติ</p>
-        <div class="field-row">
-          <div class="field">
-            <label>วันที่</label>
-            <input type="date" id="manual-att-date">
-          </div>
-          <div class="field">
-            <label>เวลาเข้างาน</label>
-            <input type="time" id="manual-att-timein">
-          </div>
-          <div class="field">
-            <label>เวลาออกงาน</label>
-            <input type="time" id="manual-att-timeout">
-          </div>
-        </div>
-        <button class="btn btn-accent" onclick="saveManualAttendance()">บันทึกวันที่ย้อนหลัง</button>
-      </div>
-
-      <div class="card">
         <div class="card-title">
           ประวัติย้อนหลัง
           <input type="month" id="history-month-filter">
@@ -66,11 +46,7 @@
   <script src="app.js"></script>
   <script src="attendance.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      renderShell('attendance.html');
-      const manualDate = document.getElementById('manual-att-date');
-      if (manualDate) manualDate.max = DateUtil.todayISO();
-    });
+    document.addEventListener('DOMContentLoaded', () => renderShell('attendance.html'));
   </script>
 </body>
 </html>

@@ -37,9 +37,10 @@ function renderReport() {
   const otEarned = ot.filter(o => o.type === 'earn').reduce((s, o) => s + o.minutes, 0);
   const otUsed = ot.filter(o => o.type === 'use').reduce((s, o) => s + o.minutes, 0);
 
+  const minsPerDay = minutesPerWorkDay(settings);
   const leaveByType = { vacation: 0, personal: 0, sick: 0 };
-  leave.forEach(l => { leaveByType[l.type] = (leaveByType[l.type] || 0) + l.days; });
-  const totalLeaveDays = Object.values(leaveByType).reduce((a, b) => a + b, 0);
+  leave.forEach(l => { leaveByType[l.type] = (leaveByType[l.type] || 0) + leaveEntryMinutes(l, minsPerDay); });
+  const totalLeaveMinutes = Object.values(leaveByType).reduce((a, b) => a + b, 0);
 
   const cards = document.getElementById('report-cards');
   cards.innerHTML = `
@@ -65,7 +66,7 @@ function renderReport() {
     </div>
     <div class="report-card">
       <div class="report-card-label">วันลารวม</div>
-      <div class="report-card-value">${totalLeaveDays} วัน</div>
+      <div class="report-card-value">${formatDHM(totalLeaveMinutes, minsPerDay)}</div>
     </div>
   `;
 
@@ -73,7 +74,7 @@ function renderReport() {
   leaveTable.innerHTML = Object.keys(LEAVE_TYPES).map(type => `
     <tr>
       <td><span class="tag" style="background:${LEAVE_TYPES[type].color}22;color:${LEAVE_TYPES[type].color}">${LEAVE_TYPES[type].label}</span></td>
-      <td>${leaveByType[type]} วัน</td>
+      <td>${formatDHM(leaveByType[type], minsPerDay)}</td>
     </tr>
   `).join('');
 

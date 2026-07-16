@@ -43,7 +43,6 @@ function useOT() {
     type: 'use',
     source: 'manual',
     minutes,
-    createdAt: new Date().toISOString(),
     note: noteInput.value.trim() || 'เบิกใช้ OT',
     expireDate: null
   });
@@ -75,15 +74,10 @@ function renderOTBalance() {
 function renderOTLedger() {
   const tbody = document.getElementById('ot-ledger-body');
   if (!tbody) return;
-  // sort newest-created first (falls back to date if createdAt is missing, e.g. old data)
-  const list = Storage.getOT().slice().sort((a, b) => {
-    const at = a.createdAt || a.date;
-    const bt = b.createdAt || b.date;
-    return bt.localeCompare(at);
-  });
+  const list = Storage.getOT().slice().sort((a, b) => b.date.localeCompare(a.date));
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-row">ยังไม่มีข้อมูล OT</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-row">ยังไม่มีข้อมูล OT</td></tr>`;
     return;
   }
 
@@ -92,20 +86,11 @@ function renderOTLedger() {
   tbody.innerHTML = list.map(o => {
     const isEarn = o.type === 'earn';
     const expired = isEarn && o.expireDate && o.expireDate < today;
-
-    // เวลา / ชั่วโมงจริง: มีเฉพาะรายการที่ระบบสร้างอัตโนมัติจากการลงเวลาออกงาน
-    const timeRangeLabel = o.timeRange || '-';
-    const actualMinutes = (o.actualMinutes != null) ? o.actualMinutes : o.minutes;
-    const actualLabel = DateUtil.minutesToClock(actualMinutes);
-    const countedLabel = (isEarn ? '' : '-') + DateUtil.minutesToDecimalHours(o.minutes);
-    const createdLabel = o.createdAt ? DateUtil.formatThaiDateTime(o.createdAt) : '-';
-
     return `
       <tr class="${expired ? 'row-expired' : ''}">
-        <td>${timeRangeLabel}</td>
-        <td>${actualLabel}</td>
-        <td><span class="tag ${isEarn ? 'tag-ot' : 'tag-used'}">${countedLabel}</span></td>
-        <td>${createdLabel}</td>
+        <td>${o.date}</td>
+        <td><span class="tag ${isEarn ? 'tag-ot' : 'tag-used'}">${isEarn ? 'ได้รับ' : 'เบิกใช้'}</span></td>
+        <td>${isEarn ? '+' : '-'}${DateUtil.minutesToHM(o.minutes)}</td>
         <td>${o.note || '-'}${expired ? ' <span class="tag tag-expired">หมดอายุ</span>' : ''}</td>
         <td><button class="btn-icon" onclick="deleteOT('${o.id}')" title="ลบ">✕</button></td>
       </tr>
@@ -113,35 +98,9 @@ function renderOTLedger() {
   }).join('');
 }
 
-/**
- * สรุปยอดรวมของรายการที่ "ได้รับ" (earn) ทั้งหมด:
- * - รายการทั้งหมด: จำนวนรายการที่ได้รับ OT
- * - รวม OT ทั้งหมด: ผลรวมชั่วโมงจริง (ชั่วโมงคิดโอที) ในรูปแบบ "H:MM (X.XX)"
- * - อัตรา OT 1.5: แสดงค่าเดียวกับ "รวม OT ทั้งหมด" (ยังไม่ได้คูณอัตรา)
- */
-function renderOTSummary() {
-  const countEl = document.getElementById('ot-total-count');
-  const totalEl = document.getElementById('ot-total-sum');
-  const rateEl = document.getElementById('ot-total-rate');
-  if (!countEl && !totalEl && !rateEl) return;
-
-  const earnList = Storage.getOT().filter(o => o.type === 'earn');
-  const totalCount = earnList.length;
-  const totalActualMinutes = earnList.reduce((s, o) => s + ((o.actualMinutes != null) ? o.actualMinutes : o.minutes), 0);
-  const totalOTMinutes = earnList.reduce((s, o) => s + o.minutes, 0);
-  const summaryLabel = totalCount > 0
-    ? `${DateUtil.minutesToClock(totalActualMinutes)} (${DateUtil.minutesToDecimalHours(totalOTMinutes)})`
-    : '0:00 (0)';
-
-  if (countEl) countEl.textContent = `${totalCount} รายการ`;
-  if (totalEl) totalEl.textContent = summaryLabel;
-  if (rateEl) rateEl.textContent = summaryLabel;
-}
-
 function renderOTPage() {
   renderOTBalance();
   renderOTLedger();
-  renderOTSummary();
   const dateInput = document.getElementById('ot-use-date');
   if (dateInput && !dateInput.value) dateInput.value = DateUtil.todayISO();
 }

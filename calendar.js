@@ -84,8 +84,13 @@ async function showDayDetail(iso) {
   } else {
     html += `<div class="detail-row detail-muted">ไม่มีการลงเวลา</div>`;
   }
+  const settings = getSettings();
+  const minsPerDay = minutesPerWorkDay(settings);
   leaves.forEach(l => {
-    html += `<div class="detail-row" style="color:${LEAVE_TYPES[l.type].color}">☾ ${LEAVE_TYPES[l.type].label} (${l.days} วัน) ${l.reason ? '– ' + l.reason : ''}</div>`;
+    const durationLabel = l.mode === 'hour'
+      ? `${l.timeStart}–${l.timeEnd}`
+      : formatDHM(leaveEntryMinutes(l, minsPerDay), minsPerDay);
+    html += `<div class="detail-row" style="color:${LEAVE_TYPES[l.type].color}">☾ ${LEAVE_TYPES[l.type].label} (${durationLabel}) ${l.reason ? '– ' + l.reason : ''}</div>`;
   });
   otEntries.forEach(o => {
     html += `<div class="detail-row">⚡ ${o.type === 'earn' ? 'ได้ OT' : 'เบิก OT'} ${DateUtil.minutesToHM(o.minutes)} ${o.note ? '– ' + o.note : ''}</div>`;

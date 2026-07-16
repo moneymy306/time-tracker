@@ -62,9 +62,11 @@
 
       const otBalance = getOTBalance();
       const year = new Date().getFullYear();
-      const used = getLeaveUsed(year);
       const settings = getSettings();
-      const remainVacation = settings.leaveQuota.vacation - (used.vacation || 0);
+      const minsPerDay = minutesPerWorkDay(settings);
+      const usedMin = getLeaveUsed(year); // minutes
+      const quotaVacationMin = dhmToMinutes(settings.leaveQuota.vacation, minsPerDay);
+      const remainVacationMin = quotaVacationMin - (usedMin.vacation || 0);
 
       // month worked hours
       const monthPrefix = DateUtil.todayISO().slice(0, 7);
@@ -87,7 +89,7 @@
         </div>
         <div class="stat-card">
           <div class="stat-label">พักร้อนคงเหลือ</div>
-          <div class="stat-value good">${remainVacation} วัน</div>
+          <div class="stat-value good">${formatDHM(remainVacationMin, minsPerDay)}</div>
         </div>
       `;
     }

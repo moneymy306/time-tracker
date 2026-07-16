@@ -32,6 +32,16 @@
             </select>
           </div>
           <div class="field">
+            <label>รูปแบบการลา</label>
+            <select id="leave-mode" onchange="toggleLeaveMode()">
+              <option value="day">เต็มวัน (นับเป็นวัน)</option>
+              <option value="hour">รายชั่วโมง (ลาบางส่วนของวัน)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row" id="leave-day-fields">
+          <div class="field">
             <label>วันที่เริ่มลา</label>
             <input type="date" id="leave-start">
           </div>
@@ -40,6 +50,22 @@
             <input type="date" id="leave-end">
           </div>
         </div>
+
+        <div class="field-row" id="leave-hour-fields" style="display:none">
+          <div class="field">
+            <label>วันที่ลา</label>
+            <input type="date" id="leave-hour-date">
+          </div>
+          <div class="field">
+            <label>เวลาเริ่มลา</label>
+            <input type="time" id="leave-hour-start">
+          </div>
+          <div class="field">
+            <label>เวลาสิ้นสุด</label>
+            <input type="time" id="leave-hour-end">
+          </div>
+        </div>
+
         <div class="field">
           <label>เหตุผล (ไม่บังคับ)</label>
           <textarea id="leave-reason" rows="2" style="width:100%"></textarea>
